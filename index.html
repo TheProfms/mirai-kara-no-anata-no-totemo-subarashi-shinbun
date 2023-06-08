@@ -1,8 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
 <title>未来からのあなたの素晴らしい新聞</title>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<link rel="shortcut icon" type="image/png" href="icon_180.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icon_180.png">
+<link rel="manifest" href="manifest.webmanifest">
+
+<style>
+* {
+margin: 0;
+padding: 0;
+}
+html, body {
+width: 100%;
+}
+</style>
+
+<style>
+a.external {
+white-space: nowrap;
+}
+a.external::after {
+content: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAQElEQVR42qXKwQkAIAxDUUdxtO6/RBQkQZvSi8I/pL4BoGw/XPkh4XigPmsUgh0626AjRsgxHTkUThsG2T/sIlzdTsp52kSS1wAAAABJRU5ErkJggg==);
+margin: 0 3px 0 5px;
+}
+</style>
+
+<style>
+/* https://loading.io/css/ */
+.lds-ring {
+display: inline-block;
+position: relative;
+width: 80px;
+width: 5vh;
+height: 80px;
+height: 5vh;
+transform: scale(1.6, 1.6);
+}
+.lds-ring div {
+box-sizing: border-box;
+display: block;
+position: absolute;
+width: 64px;
+width: 4vh;
+height: 64px;
+height: 4vh;
+margin: 8px;
+margin: 0.5vh;
+border: 8px solid #000;
+border: 0.5vh solid #777;
+border-radius: 50%;
+animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+border-color: #777 transparent transparent transparent;
+}
+.lds-ring div:nth-child(1) {
+animation-delay: -0.45s;
+}
+.lds-ring div:nth-child(2) {
+animation-delay: -0.3s;
+}
+.lds-ring div:nth-child(3) {
+animation-delay: -0.15s;
+}
+@keyframes lds-ring {
+0% {
+transform: rotate(0deg);
+}
+100% {
+transform: rotate(360deg);
+}
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/rss-parser@3.13.0/dist/rss-parser.min.js" integrity="sha256-Ff8aHU/dNcvSD0QMJlkzPhU6h04FDJh9M7fbAFxQ2Z8=" crossorigin="anonymous"></script>
+
+<script>
+'use strict';
+function setup() {
+    var url = 'https://rss.dw.com/xml/rss-de-all';
+    var parser = new RSSParser();
+    parser.parseURL('https://rss.dw.com/xml/rss-de-all', function(error, feed) {
+        feed.items.forEach(function(item) {
+            var div = document.createElement('div');
+            var a = document.createElement('a');
+            var img = document.createElement('img');
+            a.href = item.link;
+            img.src = item.enclosure.url;
+            a.appendChild(img);
+            a.appendChild(document.createElement('br'));
+            a.appendChild(document.createTextNode(item.title));
+            div.appendChild(a);
+            document.body.appendChild(div);
+        });
+    });
+}
+window.onload = setup;
+</script>
+
 </head>
+
 <body>
+
 </body>
+
 </html>
