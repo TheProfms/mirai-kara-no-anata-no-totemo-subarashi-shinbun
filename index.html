@@ -85,21 +85,33 @@ transform: rotate(360deg);
 'use strict';
 function setup() {
     var url = 'https://rss.dw.com/xml/rss-de-all';
-    var parser = new RSSParser();
-    parser.parseURL('https://rss.dw.com/xml/rss-de-all', function(error, feed) {
-        feed.items.forEach(function(item) {
-            var div = document.createElement('div');
-            var a = document.createElement('a');
-            var img = document.createElement('img');
-            a.href = item.link;
-            img.src = item.enclosure.url;
-            a.appendChild(img);
-            a.appendChild(document.createElement('br'));
-            a.appendChild(document.createTextNode(item.title));
-            div.appendChild(a);
-            document.body.appendChild(div);
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState !== XMLHttpRequest.DONE) {
+            return;
+        }
+        if (xhr.status < 200 || xhr.status >= 400) {
+            alert('error while fetching data');
+            return;
+        }
+        var parser = new RSSParser();
+        parser.parseString(xhr.responseText, function(error, feed) {
+            feed.items.forEach(function(item) {
+                var div = document.createElement('div');
+                var a = document.createElement('a');
+                var img = document.createElement('img');
+                a.href = item.link;
+                img.src = item.enclosure.url;
+                a.appendChild(img);
+                a.appendChild(document.createElement('br'));
+                a.appendChild(document.createTextNode(item.title));
+                div.appendChild(a);
+                document.body.appendChild(div);
+            });
         });
-    });
+    };
+    xhr.send();
 }
 window.onload = setup;
 </script>
