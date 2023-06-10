@@ -80,28 +80,131 @@ transform: rotate(360deg);
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/rss-parser@3.13.0/dist/rss-parser.min.js" integrity="sha256-Ff8aHU/dNcvSD0QMJlkzPhU6h04FDJh9M7fbAFxQ2Z8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/readability/0.4.4/Readability.min.js" integrity="sha512-Iaeu096o5Ss2hb/e9c3h+90S+8XKqScvCHkd2HPOqcA4gmPDPsJBhVzcv4fiRmF7YYHwr1W+4B67z3xGlkLLGA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
 <script>
 'use strict';
-function setup() {
-    var url = 'https://rss.dw.com/xml/rss-de-all';
-    var xhr = new XMLHttpRequest();
+function extractJSON(text) {
+    var signature;
+    var start;
+    var stop;
+    signature = 'window.__APOLLO_STATE__={';
+    start = text.indexOf(signature);
+    if (start < 0) {
+        console.error('signature of JSON block not found');
+        return;
+    }
+    text = text.slice(start + signature.length - 1);
+    while (true) {
+        stop = text.slice(0, text.length - 1).lastIndexOf('}');
+        if (stop < 0) {
+            console.error('end of JSON block not found');
+            return;
+        }
+        text = text.slice(0, stop + 1);
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            /* ignore */
+        }
+    }
+}
+function httpRequest(url, success, error) {
+    var xhr;
+    xhr = new XMLHttpRequest();
     xhr.open('GET', url, true);
     xhr.onreadystatechange = function() {
         if (xhr.readyState !== XMLHttpRequest.DONE) {
             return;
         }
         if (xhr.status < 200 || xhr.status >= 400) {
-            alert('error while fetching data');
+            console.error('xhr error');
+            error(xhr);
             return;
         }
+        success(xhr);
+    }
+    xhr.send();
+}
+function addText(url, target) {
+    httpRequest(url, function(request) {
+        var parser = new DOMParser();
+        var responseDocument = parser.parseFromString(request.responseText, 'text/html')
+        var article = new Readability(responseDocument).parse();
+        console.log(article);
+        var div = document.createElement('div');
+        var h1 = document.createElement('h1');
+        h1.innerHTML = article.title;
+        div.appendChild(h1);
+        div.innerHTML += article.content;
+        target.appendChild(div);
+    });
+}
+function display(event) {
+    var div = document.createElement('div');
+    div.style.position = 'absolute';
+    div.style.left = 0;
+    div.style.top = 0;
+    div.style.backgroundColor = 'white';
+    var button = document.createElement('button');
+    button.onclick = function(event) {
+        event.target.parentNode.remove();
+        return false;
+    }
+    button.innerHTML = 'Close';
+    div.appendChild(button);
+    var href = event.target.href;
+    if (href === undefined) {
+        href = event.target.parentNode.href;
+    }
+    addText(href, div);
+    document.body.appendChild(div);
+    window.scrollTo(0, 0);
+    return false;
+}
+function setup() {
+    /*
+    var a = document.createElement('a');
+    a.innerHTML = "yo";
+    a.href = "yo";
+    a.onclick = display;
+    document.body.appendChild(a);
+    return;
+    */
+    /*
+    url = 'https://www.dw.com/de/t%C3%B6dliche-attacke-auf-hotel-in-mogadischu/a-65878192';
+    url = 'article.html';
+    httpRequest(url, function(request) {
+        var data;
+        var text;
+        data = extractJSON(request.responseText);
+        for (var article in data) {
+            if (!article.startsWith('Article:')) {
+                continue;
+            }
+            text = data[article]['text'];
+            if (text === undefined) {
+                continue;
+            }
+            alert(text);
+                var div = document.createElement('div');
+div.innerHTML = text;
+                document.body.appendChild(div);
+        }
+    });
+    return;
+    */
+    var url;
+    url = 'https://rss.dw.com/xml/rss-de-all';
+    httpRequest(url, function(request) {
         var parser = new RSSParser();
-        parser.parseString(xhr.responseText, function(error, feed) {
+        parser.parseString(request.responseText, function(error, feed) {
             feed.items.forEach(function(item) {
                 var div = document.createElement('div');
                 var a = document.createElement('a');
                 var img = document.createElement('img');
                 a.href = item.link;
+                a.onclick = display;
                 img.src = item.enclosure.url;
                 a.appendChild(img);
                 a.appendChild(document.createElement('br'));
@@ -110,8 +213,7 @@ function setup() {
                 document.body.appendChild(div);
             });
         });
-    };
-    xhr.send();
+    });
 }
 window.onload = setup;
 </script>
