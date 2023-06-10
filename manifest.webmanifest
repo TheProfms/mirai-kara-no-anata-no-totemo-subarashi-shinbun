@@ -1,12 +1,11 @@
 {
   "name": "未来からのあなたの素晴らしい新聞",
-  "short_name": "shinbun",
+  "description": "Your wonderful newspaper from the future - the RSS reader",
   "start_url": "/mirai-kara-no-anata-no-totemo-subarashi-shinbun",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#ffffff",
   "theme_color": "#000000",
-  "description": "Your wonderful newspaper from the future - the RSS reader",
   "icons": [
     {
       "src": "media/icon-32.png",
