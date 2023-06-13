@@ -30,7 +30,7 @@ button.onclick = function() {
     document.body.appendChild(p);
 };
 function standardize(value) {
-    return input.value.toLowerCase().replace(/[^0-9A-Za-z]/g, '');
+    return value.toLowerCase().replace(/[^0-9A-Za-z]/g, '');
 }
 input.onchange = function(event) {
     var value = standardize(input.value);
