@@ -1,0 +1,53 @@
+<style>
+span, input { display: inline-block; vertical-align: bottom; height: 2vmax; line-height: 2vmax; margin-right: 1vmax; }
+span:first-child { width: 2vmax; }
+</style>
+<body>
+<p><span></span><input type="text"><input type="button" value="OK"><span></span></p>
+<script>
+/* https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest */
+async function digestMessage(message) {
+    const msgUint8 = new TextEncoder().encode(message); // encode as (utf-8) Uint8Array
+    const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8); // hash the message
+    const hashArray = Array.from(new Uint8Array(hashBuffer)); // convert buffer to byte array
+    const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join(""); // convert bytes to hex string
+    return hashHex;
+}
+</script>
+<script>
+var colorPreview = document.getElementsByTagName('span')[0];
+var textPreview = document.getElementsByTagName('span')[1];
+var input = document.getElementsByTagName('input')[0];
+var button = document.getElementsByTagName('input')[1];
+button.onclick = function() {
+    var p = document.createElement('p');
+    var span = document.createElement('span');
+    span.style.backgroundColor = colorPreview.style.backgroundColor;
+    p.appendChild(span);
+    var span = document.createElement('span');
+    span.innerHTML = standardize(input.value) + ', ' + textPreview.innerHTML;
+    p.appendChild(span);
+    document.body.appendChild(p);
+};
+function standardize(value) {
+    return input.value.toLowerCase().replace(/[^0-9A-Za-z]/g, '');
+}
+input.onchange = function(event) {
+    var value = standardize(input.value);
+    digestMessage(value).then(function(digestHex) {
+        var max = parseInt('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 16);
+        var digestInt = parseInt(digestHex, 16);
+        var hue = digestInt / max * 360;
+        var hsl = 'hsl(' + hue + ', 50%, 50%)';
+        colorPreview.style.backgroundColor = hsl;
+        textPreview.innerHTML = digestHex + ' = ' + hsl;
+        if (event !== undefined && event.code == 'Enter') {
+            button.click();
+        }
+    });
+};
+input.onkeyup = input.onchange;
+input.onchange();
+input.focus();
+</script>
+</body>
