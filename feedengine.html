@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<style>
+body > div { background-color: lightgray; height: 75vh; overflow: scroll; font-size: 100pt; }
+</style>
+</head>
+
+<body>
+New feed:
+<button onclick="feed = new FeedEngine({containerElement: document.getElementsByTagName('div')[0], itemCallback: itemBuilder})">regular</button>
+<button onclick="feed = new FeedEngine({containerElement: document.getElementsByTagName('div')[0], itemCallback: itemBuilder, inverseOrder: true})">inverse</button>
+Jump:
+<input type="text" value="250">
+<button onclick="feed.jumpToItem(parseInt(document.getElementsByTagName('input')[0].value))">go</button>
+<div>
+</div>
+<script>
+'use strict';
+/*
+FeedEngine
+NOTE: containerElement.innerHTML and containerElement.onscroll will be overwritten
+*/
+function FeedEngine(options) {
+    this.itemCallback = function(itemElement, itemIndex) {}; /* this function will be called after an item is added to the feed */
+    this.inverseOrder = false; /* use bottom-to-top instead of default top-to-bottom order */
+    this.neighboringItemsCount = 20; /* number of neighboring items that will be shown */
+    this.moreItemsTrigger = 5; /* item index distance to the top/bottom which triggers more items to be added to the feed */
+    Object.assign(this, options);
+    if (this.containerElement === undefined) {
+        throw new Error("container element must be specified");
+    }
+    this.jumpToItem = function(itemIndex) {
+        this.containerElement.innerHTML = '';
+        this.topItemIndex = itemIndex;
+        this.bottomItemIndex = itemIndex;
+        var initialItem = this.insertItemBelow(true);
+        for (var i = 0; i < this.neighboringItemsCount; i++) {
+            this.insertItemAbove();
+            this.insertItemBelow();
+        }
+        if (this.inverseOrder) {
+            this.containerElement.scrollTop = initialItem.offsetTop - this.containerElement.offsetTop - this.containerElement.clientHeight + initialItem.clientHeight;
+        }
+        else {
+            this.containerElement.scrollTop = initialItem.offsetTop - this.containerElement.offsetTop;
+        }
+    }
+    this.insertItemAbove = function() {
+        this.topItemIndex += this.inverseOrder ? 1 : -1;
+        var itemElement = document.createElement('div');
+        this.containerElement.insertBefore(itemElement, this.containerElement.children[0]);
+        this.itemCallback(itemElement, this.topItemIndex);
+        return itemElement;
+    }
+    this.insertItemBelow = function(isInitialItem) {
+        if (isInitialItem === undefined) {
+            this.bottomItemIndex += this.inverseOrder ? -1 : 1;
+        }
+        var itemElement = document.createElement('div');
+        this.containerElement.appendChild(itemElement);
+        this.itemCallback(itemElement, this.bottomItemIndex);
+        return itemElement;
+    }
+    this.jumpToItem(0);
+    var thisFeed = this;
+    this.containerElement.onscroll = function(event) {
+        var topTriggerIndex = thisFeed.moreItemsTrigger;
+        var bottomTriggerIndex = event.target.children.length - thisFeed.moreItemsTrigger;
+        var topTriggerElement = event.target.children[topTriggerIndex];
+        var bottomTriggerElement = event.target.children[bottomTriggerIndex];
+        var topTriggerVisible = elementVisible(topTriggerElement);
+        var bottomTriggerVisible = elementVisible(bottomTriggerElement);
+        for (var i = 0; i < thisFeed.neighboringItemsCount; i++) {
+            if (topTriggerVisible) {
+                thisFeed.insertItemAbove();
+            }
+            if (bottomTriggerVisible) {
+                thisFeed.insertItemBelow();
+            }
+        }
+    };
+}
+function elementVisible(element, container) {
+    if (container === undefined) {
+        container = element.parentNode;
+    }
+    var containerTop = container.scrollTop;
+    var containerBottom = containerTop + container.clientHeight;
+    var elementTop = element.offsetTop - container.offsetTop;
+    var elementBottom = elementTop + element.clientHeight;
+    if (elementTop < containerBottom && elementBottom > containerBottom) {
+        return 'partial top';
+    }
+    if (elementTop >= containerTop && elementBottom <= containerBottom) {
+        return 'full';
+    }
+    if (elementTop < containerTop && elementBottom > containerTop) {
+        return 'partial bottom';
+    }
+    return false;
+}
+function itemBuilder(itemElement, itemIndex) {
+    if (itemIndex < 0) return;
+    if (itemIndex > 500) return;
+    itemElement.innerHTML = itemIndex;
+}
+</script>
+</body>
+
+</html>
