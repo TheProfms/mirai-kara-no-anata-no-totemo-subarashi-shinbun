@@ -126,7 +126,7 @@ function TouchWatch(options) {
         var deltaYPercentage = deltaY / window.innerHeight;
         var xVelocity = deltaXPercentage / deltaT * 1000;
         var yVelocity = deltaYPercentage / deltaT * 1000;
-        if (Math.abs(xVelocity) > 2 && Math.abs(yVelocity) < 1) {
+        if (Math.abs(xVelocity) > 1 && Math.abs(yVelocity) < 1 && Math.abs(xVelocity / yVelocity) > 2) {
             if (xVelocity > 0) {
                 alert("swipe right");
             }
