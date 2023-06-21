@@ -1,10 +1,9 @@
 {
-  "name": "touch2",
-  "short_name": "touch2",
+  "name": "touch3",
+  "short_name": "touch3",
   "description": "Your wonderful newspaper from the future - the RSS reader",
   "start_url": "/mirai-kara-no-anata-no-totemo-subarashi-shinbun/touchwatch",
   "display": "fullscreen",
-  "orientation": null,
   "background_color": "#ffffff",
   "theme_color": "#000000",
   "icons": [
